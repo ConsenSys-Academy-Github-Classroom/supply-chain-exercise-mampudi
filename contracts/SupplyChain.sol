@@ -4,20 +4,36 @@ pragma solidity >=0.5.16 <0.9.0;
 contract SupplyChain {
 
   // <owner>
+  address public owner = msg.sender;
 
   // <skuCount>
+  uint public skuCount;
 
   // <items mapping>
-
+  mapping(uint => Item) public items;
   // <enum State: ForSale, Sold, Shipped, Received>
+  enum State {
+        ForSale,
+        Sold,
+        Shipped,
+        Received
+    }
 
   // <struct Item: name, sku, price, state, seller, and buyer>
-  
+  struct Item {
+        string name;
+        uint sku;
+        uint price;
+        State state;
+        address payable seller;
+        address payable buyer;
+    }
   /* 
    * Events
    */
 
   // <LogForSale event: sku arg>
+  event LogForSale(uint indexed sku);
 
   // <LogSold event: sku arg>
 
@@ -72,10 +88,22 @@ contract SupplyChain {
 
   function addItem(string memory _name, uint _price) public returns (bool) {
     // 1. Create a new item and put in array
+    // initialize an empty struct and then update it
+    Item memory item;
+    item.name = _name;
+    item.price = _price;
+    item.sku = skuCount;
+    item.state = State.ForSale;
+    item.seller = msg.sender;
+    item.buyer = address(0);
+    items[skuCount] = item;
     // 2. Increment the skuCount by one
+    skuCount = skuCount+1;
     // 3. Emit the appropriate event
+    emit LogForSale(skuCount);
     // 4. return true
-
+    
+    return true;
     // hint:
     // items[skuCount] = Item({
     //  name: _name, 
@@ -119,15 +147,15 @@ contract SupplyChain {
   function receiveItem(uint sku) public {}
 
   // Uncomment the following code block. it is needed to run tests
-  /* function fetchItem(uint _sku) public view */ 
-  /*   returns (string memory name, uint sku, uint price, uint state, address seller, address buyer) */ 
-  /* { */
-  /*   name = items[_sku].name; */
-  /*   sku = items[_sku].sku; */
-  /*   price = items[_sku].price; */
-  /*   state = uint(items[_sku].state); */
-  /*   seller = items[_sku].seller; */
-  /*   buyer = items[_sku].buyer; */
-  /*   return (name, sku, price, state, seller, buyer); */
-  /* } */
+   function fetchItem(uint _sku) public view 
+     returns (string memory name, uint sku, uint price, uint state, address seller, address buyer) 
+   { 
+    name = items[_sku].name;
+    sku = items[_sku].sku;
+    price = items[_sku].price;
+    state = uint(items[_sku].state);
+    seller = items[_sku].seller;
+    buyer = items[_sku].buyer;
+    return (name, sku, price, state, seller, buyer);
+   } 
 }
